@@ -95,11 +95,28 @@ def encode_image_to_base64(image_path):
 
 
 @retry_on_failure(retries=3, delay=5)
-async def send_ntfy_notification(product_data, reason):
-    """当发现推荐商品时，异步发送一个高优先级的 ntfy.sh 通知。"""
-    if not NTFY_TOPIC_URL and not WX_BOT_URL and not (GOTIFY_URL and GOTIFY_TOKEN) and not BARK_URL and not WEBHOOK_URL:
+async def send_notifications(product_data, reason):
+    """当发现推荐商品时，异步发送通知到所有已配置的通知服务。"""
+    # Check if any notification service is configured
+    notification_services_configured = any([
+        NTFY_TOPIC_URL,
+        WX_BOT_URL,
+        (GOTIFY_URL and GOTIFY_TOKEN),
+        BARK_URL,
+        WEBHOOK_URL
+    ])
+    
+    if not notification_services_configured:
         print("警告：未在 .env 文件中配置任何通知服务 (NTFY_TOPIC_URL, WX_BOT_URL, GOTIFY_URL/TOKEN, BARK_URL, WEBHOOK_URL)，跳过通知。")
         return
+    
+    # Validate input parameters
+    if not product_data:
+        print("错误：商品数据为空，无法发送通知。")
+        return
+        
+    if not reason:
+        reason = "无"
 
     title = product_data.get('商品标题', 'N/A')
     price = product_data.get('当前售价', 'N/A')
@@ -230,8 +247,12 @@ async def send_ntfy_notification(product_data, reason):
                 )
             )
             response.raise_for_status()
-            result = response.json()
-            print(f"   -> 企业微信通知发送成功。响应: {result}")
+            try:
+                result = response.json()
+                print(f"   -> 企业微信通知发送成功。响应: {result}")
+            except json.JSONDecodeError:
+                # Some webhook services might return plain text instead of JSON
+                print(f"   -> 企业微信通知发送成功。状态码: {response.status_code}")
         except requests.exceptions.RequestException as e:
             print(f"   -> 发送企业微信通知失败: {e}")
         except Exception as e:
@@ -384,16 +405,30 @@ async def get_ai_analysis(product_data, image_paths=None, prompt_text=""):
         json_start_index = ai_response_content.find('{')
         json_end_index = ai_response_content.rfind('}')
         
-        if json_start_index != -1 and json_end_index != -1:
+        if json_start_index != -1 and json_end_index != -1 and json_end_index > json_start_index:
             clean_json_str = ai_response_content[json_start_index : json_end_index + 1]
-            return json.loads(clean_json_str)
+            parsed_result = json.loads(clean_json_str)
+            
+            # Validate that the result has the expected structure
+            if isinstance(parsed_result, dict) and ('is_recommended' in parsed_result or 'reason' in parsed_result):
+                return parsed_result
+            else:
+                print("---!!! AI RESPONSE WARNING: Parsed JSON doesn't have expected structure. !!!---")
+                return {"is_recommended": False, "reason": "AI response format invalid", "raw_response": ai_response_content}
         else:
-            # 如果找不到 "{" 或 "}"，说明响应格式异常，按原样尝试解析并准备捕获错误
+            # 如果找不到 "{" 或 "}"，说明响应格式异常
             print("---!!! AI RESPONSE WARNING: Could not find JSON object markers '{' and '}' in the response. !!!---")
-            return json.loads(ai_response_content) # 这行很可能会再次触发错误，但保留逻辑完整性
+            # Try to create a fallback response
+            return {"is_recommended": False, "reason": "AI response format invalid", "raw_response": ai_response_content}
         # --- 修改结束 ---
-        
     except json.JSONDecodeError as e:
         print("---!!! AI RESPONSE PARSING FAILED (JSONDecodeError) !!!---")
         print(f"原始返回值 (Raw response from AI):\n---\n{ai_response_content}\n---")
-        raise e
+        # Return a fallback response
+        return {"is_recommended": False, "reason": f"AI response parsing failed: {str(e)}", "raw_response": ai_response_content}
+    except Exception as e:
+        print("---!!! AI RESPONSE PARSING FAILED (Unexpected Error) !!!---")
+        print(f"原始返回值 (Raw response from AI):\n---\n{ai_response_content}\n---")
+        print(f"错误详情: {e}")
+        # Return a fallback response
+        return {"is_recommended": False, "reason": f"AI response parsing failed: {str(e)}", "raw_response": ai_response_content}

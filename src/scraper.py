@@ -432,7 +432,7 @@ async def scrape_xianyu(task_config: dict, debug_limit: int = 0):
                             # 3. Send notification if recommended
                             if ai_analysis_result and ai_analysis_result.get('is_recommended'):
                                 print(f"   -> 商品被AI推荐，准备发送通知...")
-                                await send_ntfy_notification(item_data, ai_analysis_result.get("reason", "无"))
+                                await send_notifications(item_data, ai_analysis_result.get("reason", "无"))
                             # --- END: Real-time AI Analysis & Notification ---
 
                             # 4. 保存包含AI结果的完整记录
