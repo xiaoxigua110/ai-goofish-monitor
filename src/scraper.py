@@ -14,7 +14,7 @@ from playwright.async_api import (
 from src.ai_handler import (
     download_all_images,
     get_ai_analysis,
-    send_ntfy_notification,
+    send_notifications,
 )
 from src.config import (
     AI_DEBUG_MODE,
