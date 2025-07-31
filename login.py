@@ -34,7 +34,7 @@ async def main():
 
         try:
             frame_element = await page.wait_for_selector(
-                "#alibaba-login-box", timeout=60000
+                "#alibaba-login-box", timeout=120000
             )
             frame = await frame_element.content_frame()
             print("登录iframe加载完成")
@@ -45,7 +45,7 @@ async def main():
         try:
             print("等待二维码 canvas 出现...")
             canvas_element = await frame.wait_for_selector(
-                "#qrcode-img canvas", timeout=60000
+                "#qrcode-img canvas", timeout=120000
             )
             print("二维码 canvas 加载完成，截图保存为 qrcode.png")
             await canvas_element.screenshot(path="qrcode.png")
@@ -89,7 +89,7 @@ async def main():
             ]
             for selector in selectors:
                 try:
-                    sms_tip = await frame.wait_for_selector(selector, timeout=30000)
+                    sms_tip = await frame.wait_for_selector(selector, timeout=60000)
                     if sms_tip:
                         break
                 except:
@@ -102,24 +102,24 @@ async def main():
                     print("⚠️ 检测到需要短信验证码验证")
 
                     get_code_button = await frame.wait_for_selector(
-                        "#J_GetCode", timeout=10000
+                        "#J_GetCode", timeout=30000
                     )
                     print("点击获取验证码按钮...")
                     await get_code_button.click()
                     print("已点击获取验证码按钮")
 
-                    await frame.wait_for_selector("#J_Checkcode", timeout=10000)
+                    await frame.wait_for_selector("#J_Checkcode", timeout=30000)
                     print("请输入收到的6位数字验证码：")
                     verification_code = await loop.run_in_executor(None, input)
 
                     verification_input = await frame.wait_for_selector(
-                        "#J_Checkcode", timeout=10000
+                        "#J_Checkcode", timeout=30000
                     )
                     await verification_input.fill(verification_code)
                     print(f"已输入验证码: {verification_code}")
 
                     submit_button = await frame.wait_for_selector(
-                        "#btn-submit", timeout=10000
+                        "#btn-submit", timeout=30000
                     )
                     await submit_button.click()
                     print("已点击提交按钮")
@@ -145,14 +145,14 @@ async def main():
                 try:
                     keep_button = await frame.wait_for_selector(
                         "button.fm-button.fm-submit.keep-login-btn.keep-login-confirm-btn.primary",
-                        timeout=30000,
+                        timeout=60000,
                     )
                     await keep_button.click()
                     print("✅ 检测到“保持”按钮，已点击")
                 except Exception:
                     try:
                         await page.wait_for_selector(
-                            "#alibaba-login-box", state="detached", timeout=30000
+                            "#alibaba-login-box", state="detached", timeout=60000
                         )
                         print("✅ 检测到iframe消失，登录完成")
                     except Exception:

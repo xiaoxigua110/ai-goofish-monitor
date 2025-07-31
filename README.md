@@ -237,7 +237,14 @@ graph TD
 
         或者使用 `chcp 65001` 命令切换活动代码页为 UTF-8。
 
-2. **Q: 运行 `login.py` 时提示需要 `playwright install` 怎么办？**
+2. **Q: 任务显示"已被禁用 跳过执行"怎么办？**
+    - **A:** 这通常是因为缺少登录状态文件或任务未启用导致的。
+    - **解决方案:**
+        - 确保 `xianyu_state.json` 文件存在，可以通过运行 `python login.py` 生成
+        - 检查 `config.json` 中任务的 `enabled` 字段是否设置为 `true`
+        - 使用我们提供的 `check_setup.py` 脚本检查必需文件是否存在
+
+3. **Q: 运行 `login.py` 时提示需要 `playwright install` 怎么办？**
     - **A:** 这个错误表示 Playwright 运行所需的浏览器文件缺失。推荐的解决方法是，确保所有依赖都已通过 `requirements.txt` 正确安装。请在命令行中运行：
 
         ```bash
@@ -250,34 +257,34 @@ graph TD
         playwright install chromium
         ```
 
-3. **Q: 创建任务或运行时，提示 "Request timed out" 或 "Connection error" 是什么原因？**
+4. **Q: 创建任务或运行时，提示 "Request timed out" 或 "Connection error" 是什么原因？**
     - **A:** 这通常是网络问题，表示你的服务器无法连接到 `.env` 文件中配置的 `OPENAI_BASE_URL`。请检查：
         - 你的服务器网络是否通畅。
         - 如果你在中国大陆，访问国外 AI 服务（如 OpenAI, Gemini）可能需要设置网络代理。现在你可以直接在 `.env` 文件中配置 `PROXY_URL` 变量来解决此问题。
         - 确认 `OPENAI_BASE_URL` 地址填写正确，并且该服务正在正常运行。
 
-4. **Q: 我选择的 AI 模型不支持图片分析怎么办？**
+5. **Q: 我选择的 AI 模型不支持图片分析怎么办？**
     - **A:** 本项目的核心优势之一是结合图片进行多模态分析，因此 **必须** 选择一个支持图片识别（Vision / Multi-modal）的 AI 模型。如果你配置的模型不支持图片，AI 分析会失败或效果大打折扣。请在 `.env` 文件中将 `OPENAI_MODEL_NAME` 更换为支持图片输入的模型，例如 `gpt-4o`, `gemini-1.5-pro`, `deepseek-v2`, `qwen-vl-plus` 等。
 
-5. **Q: 我可以在群晖 (Synology) NAS 上通过 Docker 部署吗？**
+6. **Q: 我可以在群晖 (Synology) NAS 上通过 Docker 部署吗？**
     - **A:** 可以。部署步骤与标准的 Docker 部署基本一致：
         1. 在你的电脑上（而不是群晖上）完成 `login.py` 步骤，生成 `xianyu_state.json` 文件。
         2. 将整个项目文件夹（包含 `.env` 和 `xianyu_state.json`）上传到群晖的某个目录下。
         3. 在群晖的 Container Manager (或旧版 Docker) 中，使用 `docker-compose up -d` 命令（通过 SSH 或任务计划）来启动项目。确保 `docker-compose.yaml` 中的 volume 映射路径正确指向你在群晖上的项目文件夹。
 
-6. **Q: 如何配置使用 Gemini / Qwen / Grok 或其他非 OpenAI 的大语言模型？**
+7. **Q: 如何配置使用 Gemini / Qwen / Grok 或其他非 OpenAI 的大语言模型？**
     ***A:** 本项目理论上支持任何提供 OpenAI 兼容 API 接口的模型。关键在于正确配置 `.env` 文件中的三个变量：
         *   `OPENAI_API_KEY`: 你的模型服务商提供的 API Key。
         *`OPENAI_BASE_URL`: 模型服务商提供的 API-Compatible Endpoint 地址。请务必查阅你所使用模型的官方文档，通常格式为 `https://api.your-provider.com/v1` (注意，末尾不需要 `/chat/completions`)。
         *   `OPENAI_MODEL_NAME`: 你要使用的具体模型名称，需要模型支持图片识别，例如 `gemini-2.5-flash`。
     - **示例:** 如果你的服务商文档说 Completions 接口是 `https://xx.xx.com/v1/chat/completions`，那么 `OPENAI_BASE_URL` 就应该填 `https://xx.xx.com/v1`。
 
-7. **Q: 运行一段时间后被闲鱼检测到，提示“异常流量”或需要滑动验证？**
+8. **Q: 运行一段时间后被闲鱼检测到，提示“异常流量”或需要滑动验证？**
     ***A:** 这是闲鱼的反爬虫机制。为了降低被检测的风险，可以尝试以下方法：
         *   **关闭无头模式:** 在 `.env` 文件中设置 `RUN_HEADLESS=false`。这样浏览器会以有界面的方式运行，当出现滑动验证码时，你可以手动完成验证，程序会继续执行。
         ***降低监控频率:** 避免同时运行大量监控任务。
         *   **使用干净的网络环境:** 频繁爬取可能导致 IP 被临时标记。
-8. **Q: pyzbar 在 Windows 上安装失败怎么办？**
+9. **Q: pyzbar 在 Windows 上安装失败怎么办？**
     - **A:** pyzbar 在 Windows 上需要额外的 zbar 动态链接库支持。
     - **解决方案 (Windows):**
         - **方法1 (推荐):** 使用 Chocolatey 安装：
@@ -308,7 +315,7 @@ graph TD
         sudo pacman -S zbar
         ```
 
-9. **Q: 运行 `login.py` 时提示 `ModuleNotFoundError: No module named 'PIL'` 是什么原因？**
+10. **Q: 运行 `login.py` 时提示 `ModuleNotFoundError: No module named 'PIL'` 是什么原因？**
     - **A:** 这个错误通常是因为Python版本过低或者依赖包安装不完整导致的。本项目推荐使用 Python 3.10 或更高版本。
     - **解决方案:**
         - 确保使用 Python 3.10+ 版本运行项目
@@ -324,12 +331,19 @@ graph TD
             pip install Pillow
             ```
             
-10. **Q: 配置AI API时遇到404错误怎么办？**
+11. **Q: 配置AI API时遇到404错误怎么办？**
     - **A:** 如果在配置AI API时遇到404错误，建议先使用阿里云提供的API进行调试，确保基础功能正常后再尝试其他API提供商。某些API提供商可能存在兼容性问题或需要特殊的配置。请检查：
         - 确认 `OPENAI_BASE_URL` 地址填写正确，确保该服务正在正常运行。
         - 检查网络连接是否正常。
         - 确认API Key是否正确且具有访问权限。
         - 某些API提供商可能需要特殊的请求头或参数配置，请查阅其官方文档。
+
+12. **Q: 运行 `login.py` 时登录超时怎么办？**
+    - **A:** 登录超时通常是由于网络延迟或需要短信验证导致的。我们已经增加了超时时间，但如果仍然遇到问题，可以尝试以下解决方案：
+        - 确保网络连接稳定
+        - 如果需要短信验证，请在收到短信后尽快输入验证码
+        - 如果使用Docker部署，请确保容器能够正常访问外网
+        - 可以手动运行 `python login.py` 并在浏览器中完成登录操作
 
 ## 致谢
 
