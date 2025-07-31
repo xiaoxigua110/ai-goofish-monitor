@@ -317,5 +317,6 @@ graph TD
 
 - 请遵守闲鱼的用户协议和robots.txt规则，不要进行过于频繁的请求，以免对服务器造成负担或导致账号被限制。
 - 本项目仅供学习和技术研究使用，请勿用于非法用途。
+- 如果在配置AI接口时遇到404错误，建议优先使用阿里云提供的API进行调试，成功后再转向其他API提供商，以避免因API兼容性问题导致的错误。
 
 [![Star History Chart](https://api.star-history.com/svg?repos=dingyufei615/ai-goofish-monitor&type=Date)](https://star-history.com/#dingyufei615/ai-goofish-monitor&Date)
