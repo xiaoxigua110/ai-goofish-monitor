@@ -345,9 +345,15 @@ async def get_ai_analysis(product_data, image_paths=None, prompt_text=""):
     if AI_DEBUG_MODE:
         print("\n--- [AI DEBUG] ---")
         print("--- PROMPT TEXT (first 500 chars) ---")
-        print(prompt_text[:500] + "...")
+        try:
+            print(prompt_text[:500] + "...")
+        except UnicodeEncodeError:
+            print(prompt_text[:500].encode('utf-8', errors='ignore').decode('utf-8') + "...")
         print("--- PRODUCT DATA (JSON) ---")
-        print(product_details_json)
+        try:
+            print(product_details_json)
+        except UnicodeEncodeError:
+            print(product_details_json.encode('utf-8', errors='ignore').decode('utf-8'))
         print("-------------------\n")
 
     combined_text_prompt = f"""{system_prompt}
@@ -379,7 +385,10 @@ async def get_ai_analysis(product_data, image_paths=None, prompt_text=""):
     if AI_DEBUG_MODE:
         print("\n--- [AI DEBUG] ---")
         print("--- RAW AI RESPONSE ---")
-        print(ai_response_content)
+        try:
+            print(ai_response_content)
+        except UnicodeEncodeError:
+            print(ai_response_content.encode('utf-8', errors='ignore').decode('utf-8'))
         print("---------------------\n")
 
     try:
@@ -399,5 +408,11 @@ async def get_ai_analysis(product_data, image_paths=None, prompt_text=""):
         
     except json.JSONDecodeError as e:
         print("---!!! AI RESPONSE PARSING FAILED (JSONDecodeError) !!!---")
-        print(f"原始返回值 (Raw response from AI):\n---\n{ai_response_content}\n---")
+        print("原始返回值 (Raw response from AI):")
+        print("---")
+        try:
+            print(ai_response_content)
+        except UnicodeEncodeError:
+            print(ai_response_content.encode('utf-8', errors='ignore').decode('utf-8'))
+        print("---")
         raise e

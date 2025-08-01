@@ -1,5 +1,12 @@
 import asyncio
 import os
+import sys
+# Set default encoding to UTF-8 to prevent UnicodeEncodeError on Windows
+if sys.platform.startswith('win'):
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 from PIL import Image
 import qrcode
 from playwright.async_api import async_playwright

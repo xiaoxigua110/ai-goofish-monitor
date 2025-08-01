@@ -6,6 +6,11 @@ import glob
 import asyncio
 import signal
 import sys
+# Set default encoding to UTF-8 to prevent UnicodeEncodeError on Windows
+if sys.platform.startswith('win'):
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 from contextlib import asynccontextmanager
 from dotenv import dotenv_values
 from fastapi import FastAPI, Request, HTTPException

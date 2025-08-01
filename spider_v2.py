@@ -4,6 +4,12 @@ import os
 import argparse
 import json
 
+# Set default encoding to UTF-8 to prevent UnicodeEncodeError on Windows
+if sys.platform.startswith('win'):
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 from src.config import STATE_FILE
 from src.scraper import scrape_xianyu
 
